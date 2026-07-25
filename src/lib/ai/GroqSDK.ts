@@ -12,8 +12,8 @@ export class GroqSDK {
   private static baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
   
   // Latest Llama 3.3 for heavy lifting, Llama 3.1 8B for fast intent classification
-  private static defaultModel = 'llama-3.1-8b-instant';
-  private static fastModel = 'llama-3.1-8b-instant';
+  private static defaultModel = 'llama3-8b-8192';
+  private static fastModel = 'llama3-8b-8192';
 
   /**
    * generateStructuredResponse

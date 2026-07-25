@@ -21,7 +21,7 @@ advisorRegistry.set(EducatorCapability.id, EducatorCapability);
 const workflowExecutor = new WorkflowExecutor(
   AdvisorWorkflow,
   advisorRegistry,
-  { maxConcurrent: 3, maxRetries: 2 } // Rate limit safe settings
+  { maxConcurrent: 1, maxRetries: 3 } // Sequential execution to strictly prevent hitting Groq's 6000 TPM limit
 );
 
 export async function POST(request: Request) {

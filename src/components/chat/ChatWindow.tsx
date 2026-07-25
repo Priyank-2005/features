@@ -80,7 +80,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isTyping }) =>
                   </span>
                 </div>
                 <div className="px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-400 text-xs font-medium rounded-bl-none shadow-sm">
-                  Analysing profile...
+                  Knowith AI is thinking...
                 </div>
               </div>
             </motion.div>
