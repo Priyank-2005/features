@@ -15,7 +15,7 @@ export const InvestmentStrategySchema = z.object({
     description: z.string()
   })),
   actionPlan: z.array(z.object({
-    timeframe: z.enum(['Next 7 Days', 'Next 30 Days', 'Next 6 Months', 'Next Year']),
+    timeframe: z.string(),
     action: z.string()
   }))
 });

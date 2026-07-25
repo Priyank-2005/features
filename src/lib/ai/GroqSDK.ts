@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 export interface SDKOptions {
   model?: string;
@@ -25,8 +26,9 @@ export class GroqSDK {
     options: SDKOptions = {}
   ): Promise<{ data: T; usage: any }> {
     
-    // Auto-inject JSON instruction
-    const enhancedPrompt = `${systemPrompt}\n\nIMPORTANT: You must respond in strictly valid JSON format.`;
+    // Auto-inject JSON instruction and exact JSON schema for Llama 3.1 8B
+    const schemaString = JSON.stringify(zodToJsonSchema(schema), null, 2);
+    const enhancedPrompt = `${systemPrompt}\n\nIMPORTANT: You must respond in strictly valid JSON format matching this exact schema:\n${schemaString}`;
     
     const payload = {
       model: options.model || this.defaultModel,

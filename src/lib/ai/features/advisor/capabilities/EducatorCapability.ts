@@ -11,7 +11,7 @@ export const EducationSchema = z.object({
   faqs: z.array(z.object({
     question: z.string(),
     answer: z.string()
-  })).length(8),
+  })),
   missingDataPrompt: z.object({
     explanation: z.string(),
     fields: z.array(z.string())

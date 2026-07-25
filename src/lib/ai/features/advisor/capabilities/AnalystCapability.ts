@@ -4,10 +4,10 @@ import { GroqSDK } from '../../../../ai/GroqSDK'; // old path, actually src/lib/
 import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
 
 export const FinancialAnalysisSchema = z.object({
-  executiveSummary: z.array(z.string()).min(4).max(6).describe("4-6 personalized observations about what immediately stood out."),
+  executiveSummary: z.array(z.string()).describe("Personalized observations about what immediately stood out."),
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
-  whatWeNoticed: z.array(z.string()).min(8).max(12).describe("8-12 extremely specific observations referencing user data.")
+  whatWeNoticed: z.array(z.string()).describe("Extremely specific observations referencing user data.")
 });
 
 export const AnalystCapability: Capability<any, z.infer<typeof FinancialAnalysisSchema>> = {
