@@ -18,7 +18,7 @@ export const AdvisorFields: FieldMetadata[] = [
   { id: 'monthlyIncome', label: 'Monthly Income', type: 'currency', required: true },
   { id: 'monthlyExpenses', label: 'Monthly Expenses', type: 'currency', required: true },
   { id: 'existingInvestments', label: 'Existing Investments', type: 'currency', required: true },
-  { id: 'riskAppetite', label: 'Risk Tolerance', type: 'enum', options: ['LOW', 'MEDIUM', 'HIGH'], required: true },
+  { id: 'riskAppetite', label: 'Risk Tolerance', type: 'enum', options: ['Conservative', 'Moderate', 'Aggressive'], required: true },
 ];
 
 export const AdvisorAIResponseSchema = z.object({
@@ -26,29 +26,7 @@ export const AdvisorAIResponseSchema = z.object({
   status: z.enum(['success', 'error']),
   message: z.string().describe("The conversational response to the user in markdown"),
   updatedProfile: AdvisorProfileSchema,
-  cards: z.array(
-    z.object({
-      type: z.enum(['risk-profile', 'asset-allocation', 'missing-info', 'disclaimer']),
-      data: z.any()
-    })
-  ).optional(),
-  blueprint: z.object({
-    healthScore: z.number().min(0).max(100),
-    healthAnalysis: z.string(),
-    investorPersonality: z.string(),
-    personalityDescription: z.string(),
-    riskProfile: z.string(),
-    riskExplanation: z.string(),
-    assetAllocation: z.record(z.string(), z.string()),
-    allocationReasoning: z.string(),
-    insights: z.array(z.string()),
-    risks: z.array(z.object({ title: z.string(), description: z.string() })),
-    opportunities: z.array(z.object({ title: z.string(), description: z.string() })),
-    actionPlan: z.array(z.object({ timeframe: z.string(), action: z.string() })),
-    missingData: z.array(z.string()),
-    educationalTopic: z.object({ title: z.string(), content: z.string() }),
-    faqs: z.array(z.object({ question: z.string(), answer: z.string() }))
-  }).optional().describe("Only populated when nextState is REPORT_READY"),
+  cards: z.array(z.any()).optional(),
   nextState: z.enum(['GREETING', 'COLLECTING_PROFILE', 'VALIDATING', 'SUMMARIZING', 'REPORT_READY', 'AWAITING_USER_ACTION', 'COMPLETED']),
   missingFields: z.array(z.string()).optional(),
 });
@@ -78,7 +56,7 @@ State: GREETING -> Welcome the user warmly to Knowith Capital and ask what their
 State: COLLECTING_PROFILE -> Ask for ONE missing field at a time (age, income, expenses, investments, risk). Acknowledge their previous answer before asking the next.
 State: VALIDATING -> Validate collected data for logical consistency.
 State: SUMMARIZING -> Read back their profile beautifully. You MUST transition to REPORT_READY immediately. Do NOT ask for confirmation.
-State: REPORT_READY -> Generate the massive Wealth Blueprint. Do NOT ask for confirmation.
+State: REPORT_READY -> You are done. The backend will generate the massive Wealth Blueprint. You MUST transition to REPORT_READY as soon as you have the 6 profile fields. DO NOT generate the blueprint yourself. DO NOT skip to AWAITING_USER_ACTION.
 State: AWAITING_USER_ACTION -> Answer any follow-up questions they have about their Blueprint.
 
 You MUST respond strictly in the provided JSON schema. No free-form markdown outside of specific card data.
@@ -100,23 +78,6 @@ EXAMPLE RESPONSE FORMAT FOR REPORT_READY:
   "status": "success",
   "message": "Your Wealth Blueprint is ready. Let's review your personalized strategy.",
   "updatedProfile": { "riskAppetite": "Aggressive" },
-  "blueprint": {
-    "healthScore": 85,
-    "healthAnalysis": "Strong surplus and young age give you an excellent compounding advantage.",
-    "investorPersonality": "Growth Builder",
-    "personalityDescription": "You prioritize long-term aggressive growth over short-term stability.",
-    "riskProfile": "Aggressive",
-    "riskExplanation": "You can tolerate high market volatility to achieve maximum returns.",
-    "assetAllocation": { "Equity": "80%", "Debt": "20%" },
-    "allocationReasoning": "Heavy equity exposure leverages your long investment horizon.",
-    "insights": ["Excellent savings rate", "Zero existing debt creates a strong foundation"],
-    "risks": [{ "title": "Market Volatility", "description": "High equity exposure means larger drawdowns during crashes." }],
-    "opportunities": [{ "title": "Index Funds", "description": "Low cost compounding vehicle." }],
-    "actionPlan": [{ "timeframe": "30 Days", "action": "Setup emergency fund." }],
-    "missingData": ["Insurance details", "Dependents"],
-    "educationalTopic": { "title": "Power of Compounding", "content": "Starting at 21 gives you a massive advantage." },
-    "faqs": [{ "question": "What if the market crashes?", "answer": "Stay invested." }]
-  },
   "nextState": "REPORT_READY",
   "missingFields": []
 }`

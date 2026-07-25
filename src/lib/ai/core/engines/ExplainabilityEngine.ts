@@ -1,8 +1,7 @@
 /**
  * ExplainabilityEngine
- * Enforces the strict "WHY?" requirement across all outputs.
- * Provides standard wrappers and prompt injections to ensure AI capabilities 
- * always justify their decisions using user-specific data.
+ * Enforces personalized, human-sounding reasoning across all AI outputs.
+ * Prevents generic textbook advice and ensures every insight references user data.
  */
 export class ExplainabilityEngine {
   
@@ -12,10 +11,12 @@ export class ExplainabilityEngine {
   public static injectExplainabilityRules(basePrompt: string): string {
     return `${basePrompt}
 
-CRITICAL EXPLAINABILITY RULES:
-1. You must answer "WHY?" for every single recommendation or observation.
-2. You must answer "SO WHAT?" explaining the direct impact on the user.
-3. You must use the user's explicit data (age, surplus, goals) in your reasoning.
-4. Never state a generic financial fact without tying it back to the user's specific context.`;
+WRITING STYLE RULES:
+1. Write like a senior wealth advisor speaking directly to a client in a private consultation — warm, confident, and conversational.
+2. Every recommendation must naturally reference the user's specific data (age, surplus, goals) woven into the sentence. Do NOT use labels like "WHY:" or "SO WHAT:" or any mechanical formatting.
+3. Use concise, punchy sentences. Avoid filler phrases, repetition, or restating the same point differently.
+4. Never start sentences with "Why:" or "So what:" or any label. Just write naturally.
+5. Sound like a Bloomberg or Morgan Stanley research note — authoritative, data-driven, and human.
+6. Use INR (₹) for all currency references. Never use USD.`;
   }
 }

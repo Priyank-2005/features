@@ -2,14 +2,20 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { ShieldCheck, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, Download, ArrowRight } from 'lucide-react';
+import { generateBlueprintPDF } from '@/lib/utils/generateBlueprintPDF';
 
 export interface BlueprintData {
   healthScore: number;
+  executiveSummary: string[];
   healthAnalysis: string;
+  strengths: string[];
+  weaknesses: string[];
   investorPersonality: string;
   personalityDescription: string;
   riskProfile: string;
   riskExplanation: string;
+  behaviouralBiases: string[];
+  likelyMistakes: string[];
   assetAllocation: Record<string, string>;
   allocationReasoning: string;
   insights: string[];
@@ -276,10 +282,10 @@ export const WealthBlueprint: React.FC<{ data: BlueprintData }> = ({ data }) => 
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-12 border-t border-slate-100"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-12 border-t border-slate-100 print:hidden"
         >
           <button 
-            onClick={() => window.print()}
+            onClick={() => generateBlueprintPDF(data)}
             className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
           >
             Download PDF <Download size={18} />

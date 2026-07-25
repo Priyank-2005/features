@@ -7,11 +7,13 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageProps } from "@/components/chat/MessageBubble";
 import { WealthBlueprint, BlueprintData } from "@/components/chat/WealthBlueprint";
 import { advisorConfig } from "@/lib/config/advisor.config";
+import { OrchestratorLoading } from "@/components/chat/OrchestratorLoading";
 
 export default function AdvisorPage() {
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const [profileData, setProfileData] = useState<Record<string, any>>({});
   const [isTyping, setIsTyping] = useState(false);
+  const [isOrchestrating, setIsOrchestrating] = useState(false);
   const [blueprintData, setBlueprintData] = useState<BlueprintData | null>(null);
   
   // Initialize conversation
@@ -30,7 +32,14 @@ export default function AdvisorPage() {
     const userMessage: MessageProps = { role: "user", content, timestamp: new Date().toISOString() };
     const newHistory = [...messages, userMessage];
     setMessages(newHistory);
-    setIsTyping(true);
+    
+    // The massive loading screen should ONLY trigger if this is the final piece of missing information
+    const missingFieldsCount = advisorConfig.profileFields.filter(f => !profileData[f.id]).length;
+    if (missingFieldsCount <= 1) {
+      setIsOrchestrating(true);
+    } else {
+      setIsTyping(true);
+    }
 
     try {
       // 2. Fetch from our robust backend engine
@@ -39,7 +48,7 @@ export default function AdvisorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: content,
-          history: messages.map(m => ({ role: m.role, content: m.content })).slice(-5), // Send last 5 messages for context
+          history: messages.map(m => ({ role: m.role, content: m.content })), // Send full history for context
           currentState: profileData, // Inject explicit state machine payload
         }),
       });
@@ -54,7 +63,7 @@ export default function AdvisorPage() {
 
       // 3. Update the dynamic ProfileSidebar UI
       if (aiData.updatedProfile) {
-        setProfileData(aiData.updatedProfile);
+        setProfileData(prev => ({ ...prev, ...aiData.updatedProfile }));
       }
 
       // 4. Update the chat window with the AI's rich response
@@ -84,6 +93,7 @@ export default function AdvisorPage() {
       ]);
     } finally {
       setIsTyping(false);
+      setIsOrchestrating(false);
     }
   };
 
@@ -93,8 +103,10 @@ export default function AdvisorPage() {
       sidebarFields={advisorConfig.profileFields}
       profileData={profileData}
     >
-      {blueprintData ? (
-        <div className="flex-1 w-full h-full overflow-y-auto bg-white">
+      {isOrchestrating ? (
+        <OrchestratorLoading />
+      ) : blueprintData ? (
+        <div className="flex-1 w-full h-full overflow-y-auto bg-white print:overflow-visible print:h-auto print:block">
           <WealthBlueprint data={blueprintData} />
         </div>
       ) : (

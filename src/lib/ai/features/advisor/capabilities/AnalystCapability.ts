@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Capability } from '../../../core/types';
-import { GroqSDK } from '../../../../ai/GroqSDK'; // old path, actually src/lib/ai/GroqSDK.ts
+import { GeminiSDK } from '../../../../ai/GeminiSDK'; // old path, actually src/lib/ai/GeminiSDK.ts
 import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
 
 export const FinancialAnalysisSchema = z.object({
@@ -16,9 +16,9 @@ export const AnalystCapability: Capability<any, z.infer<typeof FinancialAnalysis
   schema: FinancialAnalysisSchema,
   execute: async (context: any) => {
     const basePrompt = `You are a Senior Financial Analyst at Knowith Capital. 
-Analyze this user's profile and deterministic metrics.
-Create a sharp, highly personalized Executive Summary and list of observations.
-Never state generic facts. Reference their exact age, income, and surplus.
+Analyze this user's profile and produce a sharp, personalized Executive Summary.
+Write like you are drafting a private client research note. Be specific — reference their exact numbers (age, income, surplus ratio, investment gap).
+Keep each observation to 1-2 clean sentences. Never use labels like "Why:" or "So what:" — weave reasoning naturally into each sentence.
 
 YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
 {
@@ -34,7 +34,7 @@ YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
       { role: 'user', content: `Profile & Context: ${JSON.stringify(context)}` }
     ];
 
-    const result = await GroqSDK.generateStructuredResponse(
+    const result = await GeminiSDK.generateStructuredResponse(
       prompt,
       messages,
       FinancialAnalysisSchema,

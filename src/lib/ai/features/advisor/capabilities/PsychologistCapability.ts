@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Capability } from '../../../core/types';
-import { GroqSDK } from '../../../../ai/GroqSDK';
+import { GeminiSDK } from '../../../../ai/GeminiSDK';
 import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
 
 export const BehaviourSchema = z.object({
@@ -17,10 +17,11 @@ export const PsychologistCapability: Capability<any, z.infer<typeof BehaviourSch
   description: 'Analyzes the human behind the numbers to determine behavioral biases and identity.',
   schema: BehaviourSchema,
   execute: async (context: any) => {
-    const basePrompt = `You are a Behavioral Psychologist specializing in Wealth Management.
-Create a memorable Investor Identity (e.g. 'The Strategic Accumulator').
-Explain how this specific user will likely react during market volatility based on their age and risk appetite.
-Identify their likely behavioral biases (e.g. Recency Bias, Loss Aversion) and common mistakes they might make.
+    const basePrompt = `You are a Behavioral Finance Psychologist at Knowith Capital.
+Create a memorable Investor Identity label (e.g. 'The Strategic Accumulator', 'The Steady Compounder').
+Write a warm, insightful personality profile explaining how this person likely thinks about money based on their age, risk appetite, and financial position.
+Explain how they will likely react during market downturns. Identify behavioral biases they may have, and common investing mistakes they should watch for.
+Write naturally, like a psychologist's private assessment — never use labels like "Why:" or "So what:".
 
 YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
 {
@@ -38,7 +39,7 @@ YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
       { role: 'user', content: `Profile & Context: ${JSON.stringify(context)}` }
     ];
 
-    const result = await GroqSDK.generateStructuredResponse(
+    const result = await GeminiSDK.generateStructuredResponse(
       prompt,
       messages,
       BehaviourSchema,

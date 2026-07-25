@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Capability } from '../../../core/types';
-import { GroqSDK } from '../../../../ai/GroqSDK';
+import { GeminiSDK } from '../../../../ai/GeminiSDK';
 import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
 
 export const EducationSchema = z.object({
@@ -24,10 +24,10 @@ export const EducatorCapability: Capability<any, z.infer<typeof EducationSchema>
   schema: EducationSchema,
   execute: async (context: any) => {
     const basePrompt = `You are a Financial Educator at Knowith Capital.
-Review the aggregated findings from the Analyst, Strategist, and Psychologist.
-1. Generate a single highly relevant educational topic based specifically on their profile (e.g. if they are young, explain compounding; if high income, explain tax efficiency).
-2. Generate exactly 8 follow-up questions they are likely asking right now, with brief, intelligent answers.
-3. Identify what critical financial information is missing from their profile that would make this report better. Explain WHY it matters.
+Review the user's profile and the aggregated findings from the Analyst, Strategist, and Psychologist.
+1. Write one educational topic that is directly relevant to their situation (e.g. if they are young, explain compounding; if high income, explain tax-efficient investing). Make the content genuinely useful, not a textbook definition.
+2. Generate exactly 8 questions the user is most likely thinking right now, with clear, practical answers. Write like a senior advisor answering a client, not a chatbot.
+3. List what critical financial data is missing from their profile that would improve this Blueprint. Keep explanations brief and natural.
 
 YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
 {
@@ -46,7 +46,7 @@ YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
     { "question": "Q8", "answer": "A8" }
   ],
   "missingDataPrompt": {
-    "explanation": "Why this data is needed...",
+    "explanation": "Brief note on why this data matters...",
     "fields": ["Insurance", "Dependents", "Tax Regime"]
   }
 }`;
@@ -57,7 +57,7 @@ YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
       { role: 'user', content: `Aggregated Context: ${JSON.stringify(context)}` }
     ];
 
-    const result = await GroqSDK.generateStructuredResponse(
+    const result = await GeminiSDK.generateStructuredResponse(
       prompt,
       messages,
       EducationSchema,

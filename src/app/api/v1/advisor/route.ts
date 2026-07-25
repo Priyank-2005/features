@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { GroqSDK } from '@/lib/ai/GroqSDK';
+import { GeminiSDK } from '@/lib/ai/GeminiSDK';
 import { AdvisorChatRequestSchema } from '@/schemas/advisor.schema';
 import { advisorConfig, AdvisorAIResponseSchema } from '@/lib/config/advisor.config';
 import { WorkflowExecutor } from '@/lib/ai/core/orchestrator/WorkflowExecutor';
@@ -21,7 +21,7 @@ advisorRegistry.set(EducatorCapability.id, EducatorCapability);
 const workflowExecutor = new WorkflowExecutor(
   AdvisorWorkflow,
   advisorRegistry,
-  { maxConcurrent: 1, maxRetries: 3 } // Sequential execution to strictly prevent hitting Groq's 6000 TPM limit
+  { maxConcurrent: 4, maxRetries: 3 } // Parallel execution on Gemini Flash
 );
 
 export async function POST(request: Request) {
@@ -52,11 +52,11 @@ export async function POST(request: Request) {
       }
     ];
 
-    const { data: aiData, usage } = await GroqSDK.generateStructuredResponse<z.infer<typeof AdvisorAIResponseSchema>>(
+    const { data: aiData, usage } = await GeminiSDK.generateStructuredResponse<z.infer<typeof AdvisorAIResponseSchema>>(
       advisorConfig.systemPrompt,
       messages,
       AdvisorAIResponseSchema, 
-      { temperature: 0.1, model: 'llama-3.1-8b-instant' } 
+      { temperature: 0.1, model: 'gemini-3.5-flash' } 
     );
 
     // 3. Multi-Agent Orchestration Intercept

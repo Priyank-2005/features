@@ -43,11 +43,15 @@ export const AdvisorWorkflow: WorkflowDefinition = {
     return {
       healthScore: initialInput.metrics.readinessScore || 0,
       executiveSummary: analysis.executiveSummary,
-      healthAnalysis: analysis.strengths[0] || 'Strong surplus.', // Fallback mapping
+      healthAnalysis: analysis.strengths.join(' '),
+      strengths: analysis.strengths,
+      weaknesses: analysis.weaknesses,
       investorPersonality: behaviour.investorIdentity,
       personalityDescription: behaviour.identityExplanation,
       riskProfile: behaviour.riskProfile,
       riskExplanation: behaviour.riskExplanation,
+      behaviouralBiases: behaviour.behaviouralBiases,
+      likelyMistakes: behaviour.likelyMistakes,
       assetAllocation: strategy.assetAllocation,
       allocationReasoning: Object.values(strategy.allocationReasoning).join(' '),
       insights: analysis.whatWeNoticed,

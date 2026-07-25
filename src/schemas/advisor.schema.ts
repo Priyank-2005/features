@@ -56,8 +56,7 @@ export const GroqAdvisorResponseSchema = z.object({
   updatedProfile: AdvisorProfileSchema,
   missingFields: z.array(z.string()).optional(),
   botResponse: z.string().describe("Conversational response"),
-  nextState: z.enum(['GREETING', 'COLLECTING_PROFILE', 'VALIDATING', 'SUMMARIZING', 'REPORT_READY', 'AWAITING_USER_ACTION', 'COMPLETED']),
-  blueprint: WealthBlueprintSchema.optional().describe("Only populated when nextState is REPORT_READY")
+  nextState: z.enum(['GREETING', 'COLLECTING_PROFILE', 'VALIDATING', 'SUMMARIZING', 'REPORT_READY', 'AWAITING_USER_ACTION', 'COMPLETED'])
 });
 
 export type GroqAdvisorResponse = z.infer<typeof GroqAdvisorResponseSchema>;
