@@ -53,7 +53,7 @@ YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
 
     const prompt = ExplainabilityEngine.injectExplainabilityRules(basePrompt);
     
-    const messages = [
+    const messages: { role: 'user' | 'assistant' | 'system', content: string }[] = [
       { role: 'user', content: `Aggregated Context: ${JSON.stringify(context)}` }
     ];
 
