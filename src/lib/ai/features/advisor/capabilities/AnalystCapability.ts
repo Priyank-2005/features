@@ -1,0 +1,46 @@
+import { z } from 'zod';
+import { Capability } from '../../../core/types';
+import { GroqSDK } from '../../../../ai/GroqSDK'; // old path, actually src/lib/ai/GroqSDK.ts
+import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
+
+export const FinancialAnalysisSchema = z.object({
+  executiveSummary: z.array(z.string()).min(4).max(6).describe("4-6 personalized observations about what immediately stood out."),
+  strengths: z.array(z.string()),
+  weaknesses: z.array(z.string()),
+  whatWeNoticed: z.array(z.string()).min(8).max(12).describe("8-12 extremely specific observations referencing user data.")
+});
+
+export const AnalystCapability: Capability<any, z.infer<typeof FinancialAnalysisSchema>> = {
+  id: 'advisor_analyst_v1',
+  description: 'Analyzes user profile and deterministic math to produce an executive summary.',
+  schema: FinancialAnalysisSchema,
+  execute: async (context: any) => {
+    const basePrompt = `You are a Senior Financial Analyst at Knowith Capital. 
+Analyze this user's profile and deterministic metrics.
+Create a sharp, highly personalized Executive Summary and list of observations.
+Never state generic facts. Reference their exact age, income, and surplus.
+
+YOU MUST RESPOND EXACTLY IN THIS JSON FORMAT:
+{
+  "executiveSummary": ["obs1", "obs2", "obs3", "obs4"],
+  "strengths": ["strength1", "strength2"],
+  "weaknesses": ["weakness1"],
+  "whatWeNoticed": ["detail1", "detail2", "detail3", "detail4", "detail5", "detail6", "detail7", "detail8"]
+}`;
+
+    const prompt = ExplainabilityEngine.injectExplainabilityRules(basePrompt);
+    
+    const messages = [
+      { role: 'user', content: `Profile & Context: ${JSON.stringify(context)}` }
+    ];
+
+    const result = await GroqSDK.generateStructuredResponse(
+      prompt,
+      messages,
+      FinancialAnalysisSchema,
+      { temperature: 0.1 }
+    );
+
+    return result.data;
+  }
+};

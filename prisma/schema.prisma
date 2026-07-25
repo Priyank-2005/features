@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  profile       Profile?
+  sessions      Session[]
+  leads         Lead[]
+}
+
+model Profile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  
+  age           Int?
+  monthlyIncome Float?
+  riskAppetite  String?   // e.g. LOW, MEDIUM, HIGH
+  goals         String?   // JSON string of goals
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Session {
+  id            String    @id @default(uuid())
+  userId        String?   // Optional if allowing guest sessions initially
+  user          User?     @relation(fields: [userId], references: [id])
+  
+  feature       String    // e.g., 'ADVISOR', 'HEALTH', 'PORTFOLIO'
+  promptVersion String    // e.g., 'v1.0.3'
+  
+  // Cost tracking per session
+  tokenUsage    Int       @default(0)
+  costUSD       Float     @default(0.0)
+  
+  messages      Message[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Message {
+  id            String    @id @default(uuid())
+  sessionId     String
+  session       Session   @relation(fields: [sessionId], references: [id])
+  
+  role          String    // USER, ASSISTANT, SYSTEM
+  content       String    // For structured output, store stringified JSON here
+  
+  feedback      Int?      // 1 (Thumb up), -1 (Thumb down)
+  
+  createdAt     DateTime  @default(now())
+}
+
+model Lead {
+  id            String    @id @default(uuid())
+  userId        String?   // If a known user
+  user          User?     @relation(fields: [userId], references: [id])
+  
+  name          String
+  email         String
+  phone         String?
+  investmentAmt Float?
+  status        String    @default("NEW") // NEW, CONTACTED, CLOSED
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
