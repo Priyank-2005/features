@@ -152,7 +152,7 @@ export const WealthBlueprint: React.FC<{ data: BlueprintData }> = ({ data }) => 
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => [`${value}%`, 'Allocation']}
+                    formatter={(value: any) => [`${value}%`, 'Allocation']}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
                   />
                 </PieChart>
