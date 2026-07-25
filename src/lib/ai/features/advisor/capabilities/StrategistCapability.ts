@@ -4,8 +4,8 @@ import { GroqSDK } from '../../../../ai/GroqSDK';
 import { ExplainabilityEngine } from '../../../core/engines/ExplainabilityEngine';
 
 export const InvestmentStrategySchema = z.object({
-  assetAllocation: z.record(z.string()).describe("Map of asset class to percentage (e.g. 'Equity Mutual Funds': '60%')."),
-  allocationReasoning: z.record(z.string()).describe("A specific 'WHY' for every single asset class allocated."),
+  assetAllocation: z.record(z.string(), z.string()).describe("Map of asset class to percentage (e.g. 'Equity Mutual Funds': '60%')."),
+  allocationReasoning: z.record(z.string(), z.string()).describe("A specific 'WHY' for every single asset class allocated."),
   opportunities: z.array(z.object({
     title: z.string(),
     description: z.string()

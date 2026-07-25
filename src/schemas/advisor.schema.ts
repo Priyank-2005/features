@@ -41,7 +41,7 @@ export const WealthBlueprintSchema = z.object({
   personalityDescription: z.string(),
   riskProfile: z.string(),
   riskExplanation: z.string(),
-  assetAllocation: z.record(z.string()).describe("Key-value pair of Asset Class to Percentage string (e.g. { Equity: '70%' })"),
+  assetAllocation: z.record(z.string(), z.string()).describe("Key-value pair of Asset Class to Percentage string (e.g. { Equity: '70%' })"),
   allocationReasoning: z.string(),
   insights: z.array(z.string()).describe("5-10 tailored bullet points on strengths"),
   risks: z.array(z.object({ title: z.string(), description: z.string() })),

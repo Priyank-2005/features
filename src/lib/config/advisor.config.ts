@@ -39,7 +39,7 @@ export const AdvisorAIResponseSchema = z.object({
     personalityDescription: z.string(),
     riskProfile: z.string(),
     riskExplanation: z.string(),
-    assetAllocation: z.record(z.string()),
+    assetAllocation: z.record(z.string(), z.string()),
     allocationReasoning: z.string(),
     insights: z.array(z.string()),
     risks: z.array(z.object({ title: z.string(), description: z.string() })),
