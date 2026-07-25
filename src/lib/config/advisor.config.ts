@@ -50,7 +50,7 @@ export const AdvisorAIResponseSchema = z.object({
     faqs: z.array(z.object({ question: z.string(), answer: z.string() }))
   }).optional().describe("Only populated when nextState is REPORT_READY"),
   nextState: z.enum(['GREETING', 'COLLECTING_PROFILE', 'VALIDATING', 'SUMMARIZING', 'REPORT_READY', 'AWAITING_USER_ACTION', 'COMPLETED']),
-  missingFields: z.array(z.string()),
+  missingFields: z.array(z.string()).optional(),
 });
 
 export const advisorConfig: FeatureConfig = {
