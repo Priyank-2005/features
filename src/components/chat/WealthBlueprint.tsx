@@ -25,7 +25,7 @@ export const WealthBlueprint: React.FC<{ data: BlueprintData }> = ({ data }) => 
   // Animation Variants
   const sectionVariant = {
     hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } }
   };
 
   // Process Asset Allocation for Recharts
@@ -84,7 +84,7 @@ export const WealthBlueprint: React.FC<{ data: BlueprintData }> = ({ data }) => 
                   strokeDasharray="502.65" 
                   initial={{ strokeDashoffset: 502.65 }}
                   whileInView={{ strokeDashoffset: 502.65 - (502.65 * (data.healthScore || 0)) / 100 }}
-                  transition={{ duration: 2, ease: "easeOut" }}
+                  transition={{ duration: 2, ease: "easeOut" as const }}
                   strokeLinecap="round"
                 />
                 <defs>
