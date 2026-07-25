@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const payload = {
-      model: 'llama3-8b-8192', // Switched to lighter model to avoid rate limits
+      model: 'llama-3.1-8b-instant', // Switched to lighter model to avoid rate limits
       messages: [
         ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
         ...messages,

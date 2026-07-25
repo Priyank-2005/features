@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       advisorConfig.systemPrompt,
       messages,
       AdvisorAIResponseSchema, 
-      { temperature: 0.1 } 
+      { temperature: 0.1, model: 'mixtral-8x7b-32768' } 
     );
 
     // 3. Multi-Agent Orchestration Intercept
