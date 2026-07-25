@@ -21,7 +21,7 @@ export class GroqService {
   private static baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
   
   // Default to Llama 3.3 for all production inference
-  private static defaultModel = 'llama-3.3-70b-versatile';
+  private static defaultModel = 'llama-3.1-8b-instant';
 
   /**
    * Generates a structured JSON response from Groq.

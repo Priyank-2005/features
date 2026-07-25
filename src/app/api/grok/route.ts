@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const payload = {
-      model: 'llama-3.3-70b-versatile', // Updated to the latest Llama 3.3 model
+      model: 'llama-3.1-8b-instant', // Switched to lighter model to avoid rate limits
       messages: [
         ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
         ...messages,
