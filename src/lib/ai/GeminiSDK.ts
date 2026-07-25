@@ -12,6 +12,9 @@ export class GeminiSDK {
   private static apiKey = process.env.GEMINI_API_KEY || '';
   private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
   
+  private static defaultModel = 'gemini-3.5-flash';
+  private static fastModel = 'gemini-3.5-flash-lite';
+  
   // Gemini 3.5 Flash is the latest stable version with massive free tier limits
   // Priority ordered fallback list to bypass 429 limits
   private static fallbackModels = [
