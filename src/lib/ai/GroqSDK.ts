@@ -27,7 +27,7 @@ export class GroqSDK {
   ): Promise<{ data: T; usage: any }> {
     
     // Auto-inject JSON instruction and exact JSON schema for Llama 3.1 8B
-    const schemaString = JSON.stringify(zodToJsonSchema(schema), null, 2);
+    const schemaString = JSON.stringify(zodToJsonSchema(schema as any), null, 2);
     const enhancedPrompt = `${systemPrompt}\n\nIMPORTANT: You must respond in strictly valid JSON format matching this exact schema:\n${schemaString}`;
     
     const payload = {
