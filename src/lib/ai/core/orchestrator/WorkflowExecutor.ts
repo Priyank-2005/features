@@ -30,10 +30,10 @@ export class WorkflowExecutor {
       // Execute each stage sequentially
       for (const stage of this.definition.stages) {
         if (stage.executeType === 'PARALLEL') {
-          await this.executeParallelStage(stage.id, stage.capabilities, contextBuilder, warnings);
+          await this.executeParallelStage(stage, contextBuilder, warnings);
           capabilitiesExecuted += stage.capabilities.length;
         } else {
-          await this.executeSequentialStage(stage.id, stage.capabilities, contextBuilder, warnings);
+          await this.executeSequentialStage(stage, contextBuilder, warnings);
           capabilitiesExecuted += stage.capabilities.length;
         }
       }
@@ -67,8 +67,8 @@ export class WorkflowExecutor {
     }
   }
 
-  private async executeParallelStage(stageId: string, capabilityIds: string[], ctxBuilder: ContextBuilder, warnings: string[]) {
-    const tasks = capabilityIds.map(capId => {
+  private async executeParallelStage(stage: any, ctxBuilder: ContextBuilder, warnings: string[]) {
+    const tasks = stage.capabilities.map((capId: string) => {
       const capability = this.registry.get(capId);
       if (!capability) {
         warnings.push(`Capability ${capId} not found in registry.`);
@@ -76,22 +76,25 @@ export class WorkflowExecutor {
       }
 
       return this.concurrency.executeTask(async () => {
-        // Build isolated LLM context
-        const inputContext = ctxBuilder.getLLMContext();
+        // Build isolated LLM context using stage builder if provided, else raw context
+        let inputContext = ctxBuilder.getLLMContext();
+        if (stage.contextBuilder) {
+           inputContext = stage.contextBuilder(inputContext.initialInput, inputContext.results);
+        }
         const result = await capability.execute(inputContext);
-        ctxBuilder.addCapabilityResult(stageId, capId, result);
+        ctxBuilder.addCapabilityResult(stage.id, capId, result);
       }, `Capability-${capId}`);
     });
 
     await Promise.allSettled(tasks).then(results => {
       results.forEach(res => {
-        if (res.status === 'rejected') warnings.push(`Stage ${stageId} task failed: ${res.reason}`);
+        if (res.status === 'rejected') warnings.push(`Stage ${stage.id} task failed: ${res.reason}`);
       });
     });
   }
 
-  private async executeSequentialStage(stageId: string, capabilityIds: string[], ctxBuilder: ContextBuilder, warnings: string[]) {
-    for (const capId of capabilityIds) {
+  private async executeSequentialStage(stage: any, ctxBuilder: ContextBuilder, warnings: string[]) {
+    for (const capId of stage.capabilities) {
       const capability = this.registry.get(capId);
       if (!capability) {
         warnings.push(`Capability ${capId} not found in registry.`);
@@ -100,9 +103,12 @@ export class WorkflowExecutor {
 
       try {
         await this.concurrency.executeTask(async () => {
-          const inputContext = ctxBuilder.getLLMContext();
+          let inputContext = ctxBuilder.getLLMContext();
+          if (stage.contextBuilder) {
+             inputContext = stage.contextBuilder(inputContext.initialInput, inputContext.results);
+          }
           const result = await capability.execute(inputContext);
-          ctxBuilder.addCapabilityResult(stageId, capId, result);
+          ctxBuilder.addCapabilityResult(stage.id, capId, result);
         }, `Capability-${capId}`);
       } catch (error: any) {
         warnings.push(`Sequential Capability ${capId} failed: ${error.message}`);

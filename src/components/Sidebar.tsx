@@ -34,7 +34,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-[#0A0A0A] border-r border-[#1F1F1F] text-white">
+    <div className="flex h-screen w-64 flex-col bg-[#0A0A0A] border-r border-[#1F1F1F] text-white print:hidden">
       <div className="p-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
           Knowith AI

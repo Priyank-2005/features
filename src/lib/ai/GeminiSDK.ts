@@ -47,39 +47,54 @@ export class GeminiSDK {
     let lastError: any = null;
 
     for (const modelName of modelsToTry) {
-      let responseText = "";
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName, systemInstruction: enhancedPrompt });
-        
-        const result = await model.generateContent({
-          contents: formattedMessages,
-          generationConfig: {
-            temperature: options.temperature ?? 0.1,
+      let attempts = 0;
+      const maxAttempts = 2; // Try up to 2 times per model for parsing errors
+      
+      while (attempts < maxAttempts) {
+        attempts++;
+        let responseText = "";
+        try {
+          const model = this.genAI.getGenerativeModel({ model: modelName, systemInstruction: enhancedPrompt });
+          
+          const result = await model.generateContent({
+            contents: formattedMessages,
+            generationConfig: {
+              temperature: options.temperature ?? 0.1,
+              responseMimeType: "application/json",
+            }
+          });
+          
+          responseText = result.response.text();
+          
+          const cleanText = responseText.replace(/^```json/mi, '').replace(/```$/m, '').trim();
+          const parsedData = JSON.parse(cleanText);
+          const validatedData = schema.parse(parsedData);
+          
+          return { data: validatedData, usage: result.response.usageMetadata };
+
+        } catch (error: any) {
+          lastError = error;
+          
+          // If it's a rate limit or API error, break the while loop to fall back to the next model
+          if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Quota') || error.message?.includes('fetch')) {
+            console.warn(`[GeminiSDK] ${modelName} failed (Rate Limit/API). Falling back...`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            break; // Move to the next model in modelsToTry
           }
-        });
-        
-        responseText = result.response.text();
-        
-        const cleanText = responseText.replace(/^```json/mi, '').replace(/```$/m, '').trim();
-        const parsedData = JSON.parse(cleanText);
-        const validatedData = schema.parse(parsedData);
-        
-        return { data: validatedData, usage: result.response.usageMetadata };
 
-      } catch (error: any) {
-        lastError = error;
-        
-        // If it's a rate limit or API error, fall back to the next model in the list
-        if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Quota') || error.message?.includes('fetch')) {
-          console.warn(`[GeminiSDK] ${modelName} failed (Rate Limit/API). Falling back...`);
-          continue; 
+          // If it's a Zod/parsing error, we can retry on the same model by appending the error
+          if (attempts < maxAttempts) {
+             console.warn(`[GeminiSDK] Parsing/Validation failed on ${modelName}, retrying (${attempts}/${maxAttempts})...`);
+             formattedMessages.push({ role: 'model', parts: [{ text: responseText }] });
+             formattedMessages.push({ role: 'user', parts: [{ text: `Validation failed: ${error.message}. Please fix the JSON output to strictly match the schema.` }] });
+             continue;
+          }
+
+          console.error("Zod Validation Failed permanently on Gemini JSON output.");
+          console.error("Raw AI Output:", responseText);
+          console.error("Zod Error:", error);
+          break; // Exhausted attempts for this model, move to next model (though likely it will fail there too if it's a prompt issue)
         }
-
-        // If it's a Zod/parsing error, throw immediately so the ConcurrencyController can retry it
-        console.error("Zod Validation Failed on Gemini JSON output.");
-        console.error("Raw AI Output:", responseText);
-        console.error("Zod Error:", error);
-        throw new Error("AI output did not match the expected schema.");
       }
     }
 

@@ -45,7 +45,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isTyping }) =>
                 role={msg.role} 
                 content={msg.content} 
                 cards={msg.cards} 
-                timestamp={msg.timestamp || new Date().toISOString()} 
+                timestamp={msg.timestamp} 
               />
             ))}
           </AnimatePresence>

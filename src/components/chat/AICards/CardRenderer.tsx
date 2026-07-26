@@ -79,6 +79,37 @@ export const CardRenderer: React.FC<CardRendererProps> = ({ cards }) => {
                 </div>
               </div>
             );
+          case 'escalation-handoff':
+            return (
+              <div key={index} className="rounded-2xl bg-white border border-rose-200 shadow-sm overflow-hidden mt-4">
+                <div className="p-4 border-b border-rose-100 bg-rose-50 flex items-center gap-2">
+                  <AlertCircle size={18} className="text-rose-600" />
+                  <h3 className="font-semibold text-rose-900">Human Advisor Esclation</h3>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Reason</h4>
+                    <p className="text-sm font-medium text-slate-800">{card.data.reason}</p>
+                  </div>
+                  <div className="flex gap-4">
+                     <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Priority</h4>
+                      <span className={`text-xs px-2 py-1 rounded-full font-bold ${
+                        card.data.priority === 'Urgent' || card.data.priority === 'High' 
+                          ? 'bg-rose-100 text-rose-700' 
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {card.data.priority}
+                      </span>
+                     </div>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Recommended Follow-up</h4>
+                    <p className="text-sm text-slate-600">{card.data.recommendedFollowUp}</p>
+                  </div>
+                </div>
+              </div>
+            );
           case 'disclaimer':
             return (
               <div key={index} className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3 text-slate-500 text-xs mt-2">

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "category": "Company Overview",
+    "title": "About Knowith Capital",
+    "content": "Knowith Capital is a premium wealth management firm dedicated to providing intelligent, AI-driven financial insights and personalized portfolio management. We cater to high-net-worth individuals and retail investors looking for long-term growth and capital preservation."
+  },
+  {
+    "id": "2",
+    "category": "Services",
+    "title": "Portfolio Management Services (PMS)",
+    "content": "Our Portfolio Management Services (PMS) are designed for investors looking for active management of their wealth. We offer tailored portfolios across equity, debt, and hybrid assets with a minimum investment of ₹50 Lakhs. Our AI framework assists human advisors in identifying market opportunities and managing risks."
+  },
+  {
+    "id": "3",
+    "category": "Services",
+    "title": "Mutual Funds & SIPs",
+    "content": "We provide access to top-rated mutual funds through lump sum investments or Systematic Investment Plans (SIPs). SIPs allow investors to invest a fixed amount regularly (e.g., monthly) and benefit from rupee cost averaging. Minimum SIP starts at ₹1,000 per month."
+  },
+  {
+    "id": "4",
+    "category": "Policies",
+    "title": "Fees & Charges",
+    "content": "Our fee structure is transparent. For mutual funds, we offer both direct (no commission, advisory fee only) and regular (commission-based, no advisory fee) options. PMS management fees range from 1% to 2% annually, depending on the portfolio size, plus performance fees on returns above the hurdle rate."
+  },
+  {
+    "id": "5",
+    "category": "Contact Information",
+    "title": "Offices & Contact",
+    "content": "Headquarters: 123 Financial District, Mumbai, Maharashtra 400001, India. Email: support@knowithcapital.com. Phone: +91 1800 123 4567. Business hours: Monday to Friday, 9:00 AM to 6:00 PM IST."
+  },
+  {
+    "id": "6",
+    "category": "Education",
+    "title": "What is CAGR?",
+    "content": "Compound Annual Growth Rate (CAGR) is the mean annual growth rate of an investment over a specified period of time longer than one year. It represents one of the most accurate ways to calculate and determine returns for anything that can rise or fall in value over time."
+  }
+]

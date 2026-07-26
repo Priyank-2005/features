@@ -1,115 +1,138 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Activity, Loader2 } from "lucide-react";
-import { callGrokAPI } from "@/lib/grok";
-import ReactMarkdown from "react-markdown";
+import { useState, useEffect } from 'react';
+import { ChatLayout } from '@/components/chat/ChatLayout';
+import { ChatWindow } from '@/components/chat/ChatWindow';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { MessageProps } from '@/components/chat/MessageBubble';
+import { OrchestratorLoading } from '@/components/chat/OrchestratorLoading';
+import HealthBlueprintUI from '@/components/chat/HealthBlueprint';
+import { healthConfig } from '@/lib/config/health.config';
+import { HealthProfile, HealthBlueprint } from '@/schemas/health.schema';
+import { generateHealthPDF } from '@/lib/utils/generateHealthPDF';
 
-const SYSTEM_PROMPT = `You are an AI Financial Health Analyzer. 
-The user will provide their income, expenses, savings, liabilities, and investments.
-Calculate important financial metrics (e.g., debt-to-income ratio, savings rate) and generate an easy-to-understand report with personalized recommendations to improve their financial health.
-Format the output beautifully in Markdown. Use bullet points and bold text for key metrics.`;
+export default function HealthPage() {
+  const [messages, setMessages] = useState<MessageProps[]>([
+    { 
+      role: 'assistant', 
+      content: "Welcome to Knowith Capital. I'm your Principal Wealth Strategist. Let's analyze your overall financial health today. To start, could you share your approximate monthly net income?"
+    }
+  ]);
+  const [profile, setProfile] = useState<HealthProfile>({});
+  const [currentState, setCurrentState] = useState<string>('COLLECTING_PROFILE');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isOrchestrating, setIsOrchestrating] = useState(false);
+  const [blueprint, setBlueprint] = useState<HealthBlueprint | null>(null);
 
-export default function FinancialHealthPage() {
-  const [formData, setFormData] = useState({
-    income: "",
-    expenses: "",
-    savings: "",
-    liabilities: "",
-    investments: ""
-  });
-  
-  const [report, setReport] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim() || isTyping || isOrchestrating) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setReport(null);
-
-    const prompt = `Please analyze my financial health based on the following:
-Income: ${formData.income}
-Monthly Expenses: ${formData.expenses}
-Current Savings: ${formData.savings}
-Total Liabilities (Debt): ${formData.liabilities}
-Total Investments: ${formData.investments}`;
+    const newMessages: MessageProps[] = [...messages, { role: 'user', content, timestamp: new Date().toISOString() }];
+    setMessages(newMessages);
+    setIsTyping(true);
 
     try {
-      const reply = await callGrokAPI([{ role: "user", content: prompt }], SYSTEM_PROMPT);
-      setReport(reply);
+      const response = await fetch('/api/v1/health', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: content,
+          profileData: profile,
+          currentState,
+          history: messages
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error);
+
+      if (data.updatedProfile) {
+        setProfile(data.updatedProfile);
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message, timestamp: new Date().toISOString() }]);
+      setCurrentState(data.nextState);
+
+      if (data.nextState === 'REPORT_READY') {
+        setIsOrchestrating(true);
+        setIsTyping(false);
+
+        const orchestratorResponse = await fetch('/api/v1/health', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: "Generate blueprint",
+            profileData: data.updatedProfile,
+            currentState: 'REPORT_READY',
+            history: [...newMessages, { role: 'assistant', content: data.message }]
+          }),
+        });
+
+        const orchestratorData = await orchestratorResponse.json();
+        
+        if (orchestratorData.blueprint) {
+          setBlueprint(orchestratorData.blueprint);
+          setCurrentState('AWAITING_USER_ACTION');
+          setMessages(prev => [...prev, { role: 'assistant', content: orchestratorData.message, timestamp: new Date().toISOString() }]);
+        } else {
+          setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I encountered an error generating your blueprint due to high system load. Please try again.", timestamp: new Date().toISOString() }]);
+        }
+        setIsOrchestrating(false);
+      } else {
+        setIsTyping(false);
+      }
+
     } catch (error: any) {
-      setReport(`**Error**: ${error.message}`);
-    } finally {
-      setIsLoading(false);
+      console.error('Chat error:', error);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${error.message}. Please try again.`, timestamp: new Date().toISOString() }]);
+      setIsTyping(false);
+      setIsOrchestrating(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleDownloadPDF = () => {
+    if (blueprint) {
+      generateHealthPDF(blueprint);
+    }
   };
 
   return (
-    <div className="h-full flex flex-col p-6 max-w-5xl mx-auto overflow-y-auto">
-      <header className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
-        <h1 className="text-3xl font-bold gradient-text">Financial Health Analyzer</h1>
-        <p className="text-gray-400 mt-2">Get a comprehensive AI analysis of your current financial situation.</p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
-        <div className="glass-panel p-6 h-fit">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <Activity className="text-blue-400 w-5 h-5" />
-            Enter Your Details
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Monthly Income (₹)</label>
-              <input required type="number" name="income" value={formData.income} onChange={handleChange} className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="e.g. 100000" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Monthly Expenses (₹)</label>
-              <input required type="number" name="expenses" value={formData.expenses} onChange={handleChange} className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="e.g. 40000" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Total Savings (₹)</label>
-              <input required type="number" name="savings" value={formData.savings} onChange={handleChange} className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="e.g. 500000" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Total Liabilities / Debt (₹)</label>
-              <input required type="number" name="liabilities" value={formData.liabilities} onChange={handleChange} className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="e.g. 150000" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Total Investments (₹)</label>
-              <input required type="number" name="investments" value={formData.investments} onChange={handleChange} className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="e.g. 300000" />
-            </div>
+    <ChatLayout 
+      featureTitle={healthConfig.title}
+      sidebarFields={healthConfig.profileFields}
+      profileData={profile}
+    >
+      {isOrchestrating ? (
+        <OrchestratorLoading />
+      ) : blueprint ? (
+        <div className="flex-1 w-full h-full overflow-y-auto bg-white print:overflow-visible print:h-auto print:block">
+          <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+            <HealthBlueprintUI data={blueprint} onDownload={handleDownloadPDF} />
             
-            <button disabled={isLoading} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 mt-4">
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Activity className="w-5 h-5" />}
-              {isLoading ? "Analyzing..." : "Generate AI Report"}
-            </button>
-          </form>
+            {/* Chat interface resumes below the blueprint */}
+            <div className="mt-12 max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6 print:hidden">
+              <h3 className="text-xl font-medium text-slate-200 mb-6">Ask Follow-up Questions</h3>
+              <ChatWindow messages={messages} isTyping={isTyping} />
+              <div className="mt-4">
+                <ChatInput 
+                  onSend={handleSendMessage} 
+                  isLoading={isTyping || isOrchestrating}
+                  disabled={isTyping || isOrchestrating}
+                  placeholder="Ask about your Health Blueprint..." 
+                />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="glass-panel p-6 h-fit min-h-[400px]">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            AI Analysis Report
-          </h2>
-          {isLoading ? (
-            <div className="h-[300px] flex flex-col items-center justify-center text-blue-400 gap-4">
-              <Loader2 className="w-10 h-10 animate-spin" />
-              <p className="text-sm animate-pulse text-gray-400">Crunching the numbers...</p>
-            </div>
-          ) : report ? (
-            <div className="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">
-              <ReactMarkdown>{report}</ReactMarkdown>
-            </div>
-          ) : (
-            <div className="h-[300px] flex items-center justify-center text-gray-500 text-sm text-center">
-              Fill out your details and generate a report to see your financial health metrics and personalized AI recommendations.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          <ChatWindow messages={messages} isTyping={isTyping} />
+          <div className="shrink-0 w-full z-20 shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.05)]">
+            <ChatInput onSend={handleSendMessage} isLoading={isTyping || isOrchestrating} disabled={isTyping || isOrchestrating} />
+          </div>
+        </>
+      )}
+    </ChatLayout>
   );
 }

@@ -21,7 +21,7 @@ advisorRegistry.set(EducatorCapability.id, EducatorCapability);
 const workflowExecutor = new WorkflowExecutor(
   AdvisorWorkflow,
   advisorRegistry,
-  { maxConcurrent: 4, maxRetries: 3 } // Parallel execution on Gemini Flash
+  { maxConcurrent: 1, maxRetries: 3 } // Changed to 1 to prevent rate-limit cascade
 );
 
 export async function POST(request: Request) {

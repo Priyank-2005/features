@@ -1,75 +1,90 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Newspaper, Loader2, RefreshCw } from "lucide-react";
-import { callGrokAPI } from "@/lib/grok";
-import ReactMarkdown from "react-markdown";
 
-const SYSTEM_PROMPT = `You are an AI Market News Summarizer for Knowith Capital.
-Since we don't have a live news feed connected yet, generate a realistic, simulated "Daily Market Summary" for today's Indian and Global financial markets.
-Include 3-4 major news headlines, summarize important developments, and highlight potential market impacts (e.g., impact on Nifty 50, specific sectors).
-Format beautifully in Markdown. Be concise but informative.`;
+import { MarketBlueprint as MarketBlueprintUI } from "@/components/market/MarketBlueprint";
+import { OrchestratorLoading } from "@/components/chat/OrchestratorLoading";
+import { MarketBlueprint } from "@/schemas/market.schema";
+import { RefreshCw } from "lucide-react";
 
 export default function MarketNewsPage() {
-  const [report, setReport] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [blueprint, setBlueprint] = useState<MarketBlueprint | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchNewsSummary = async () => {
-    setIsLoading(true);
-    setReport(null);
-
+  const fetchMarketIntelligence = async (forceRefresh = false) => {
+    if (forceRefresh) setIsRefreshing(true);
+    else setIsLoading(true);
+    
+    setError(null);
+    
     try {
-      const reply = await callGrokAPI([{ role: "user", content: "Generate today's market news summary and analysis." }], SYSTEM_PROMPT);
-      setReport(reply);
-    } catch (error: any) {
-      setReport(`**Error**: ${error.message}`);
+      const response = await fetch('/api/v1/market', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forceRefresh })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error?.message || "Failed to load market intelligence");
+
+      if (data.data?.blueprint) {
+        setBlueprint(data.data.blueprint);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("Unable to generate market intelligence at this time. Please try again later.");
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchNewsSummary();
+    fetchMarketIntelligence();
   }, []);
 
   return (
-    <div className="h-full flex flex-col p-6 max-w-5xl mx-auto overflow-y-auto">
-      <header className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500 flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Market News Summarizer</h1>
-          <p className="text-gray-400 mt-2">Daily AI-curated updates on global and domestic financial markets.</p>
-        </div>
-        <button 
-          onClick={fetchNewsSummary}
-          disabled={isLoading}
-          className="bg-[#1E1E2E] hover:bg-[#2E2E3E] border border-[#3E3E5E] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
-        </button>
-      </header>
-
-      <div className="glass-panel p-8 min-h-[60vh] animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
-        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 border-b border-[#2E2E3E] pb-4">
-          <Newspaper className="text-blue-400 w-6 h-6" />
-          Today's Market Pulse
-        </h2>
+    <>
+      <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden print:bg-white print:h-auto print:overflow-visible">
         
-        {isLoading ? (
-          <div className="h-[400px] flex flex-col items-center justify-center text-blue-400 gap-4">
-            <Loader2 className="w-10 h-10 animate-spin" />
-            <p className="text-sm animate-pulse text-gray-400">Aggregating and summarizing global news...</p>
-          </div>
-        ) : report ? (
-          <div className="prose prose-invert max-w-none prose-h3:text-blue-400 prose-a:text-indigo-400 leading-relaxed whitespace-pre-wrap">
-            <ReactMarkdown>{report}</ReactMarkdown>
-          </div>
-        ) : (
-          <div className="h-[400px] flex items-center justify-center text-gray-500 text-sm text-center">
-            Failed to load news summary.
-          </div>
-        )}
+        {/* Top bar for mobile/web structure (consistent with platform but no chat sidebar) */}
+        <header className="h-14 bg-white border-b border-slate-200 flex items-center px-6 shrink-0 z-10 print:hidden shadow-sm">
+           <h2 className="font-medium text-indigo-900">Market News</h2>
+        </header>
+
+        <main className="flex-1 overflow-y-auto w-full print:overflow-visible">
+          {isLoading ? (
+            <div className="h-full w-full flex items-center justify-center">
+              <OrchestratorLoading />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-rose-500 mb-4">
+                 <RefreshCw size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Analysis Failed</h3>
+              <p className="text-slate-500 mb-6">{error}</p>
+              <button 
+                onClick={() => fetchMarketIntelligence(true)}
+                className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : blueprint ? (
+            <div className="max-w-6xl mx-auto p-4 md:p-8">
+              <MarketBlueprintUI 
+                data={blueprint} 
+                onRefresh={() => fetchMarketIntelligence(true)} 
+                isRefreshing={isRefreshing}
+              />
+            </div>
+          ) : null}
+        </main>
       </div>
-    </div>
+    </>
   );
 }

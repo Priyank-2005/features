@@ -1,94 +1,122 @@
 "use client";
 
-import { useState } from "react";
-import { PieChart, Loader2 } from "lucide-react";
-import { callGrokAPI } from "@/lib/grok";
-import ReactMarkdown from "react-markdown";
-
-const SYSTEM_PROMPT = `You are a professional AI Portfolio Analyzer for Knowith Capital.
-Evaluate the portfolio diversification, asset allocation, sector exposure, and overall risk based on the user's uploaded/pasted portfolio.
-Summarize the findings, highlight strengths, weaknesses, and opportunities for improvement.
-Format your output beautifully in Markdown.`;
+import { useState, useRef, useEffect } from "react";
+import { ChatWindow } from "@/components/chat/ChatWindow";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatLayout } from "@/components/chat/ChatLayout";
+import { PortfolioBlueprint as PortfolioBlueprintUI } from "@/components/chat/PortfolioBlueprint";
+import { OrchestratorLoading } from "@/components/chat/OrchestratorLoading";
+import { generatePortfolioPDF } from "@/lib/utils/generatePortfolioPDF";
+import { portfolioConfig } from "@/lib/config/portfolio.config";
 
 export default function PortfolioPage() {
-  const [portfolioData, setPortfolioData] = useState("");
-  const [report, setReport] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([{
+    role: 'assistant',
+    content: "Welcome to Knowith Capital. I'm your Principal Wealth Strategist. Let's analyze your portfolio to ensure it's properly diversified and aligned with your goals. To start, what is the total value of your investment portfolio?"
+  }]);
+  
+  const [profile, setProfile] = useState<Record<string, any>>({});
+  const [blueprint, setBlueprint] = useState<any | null>(null);
+  
+  const [isTyping, setIsTyping] = useState(false);
+  const [isOrchestrating, setIsOrchestrating] = useState(false);
+  
+  const [currentState, setCurrentState] = useState<string>('COLLECTING_L1');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!portfolioData.trim()) return;
-    
-    setIsLoading(true);
-    setReport(null);
-
-    const prompt = `Here is my portfolio data:\\n${portfolioData}\\n\\nPlease analyze this portfolio.`;
+  const handleSendMessage = async (content: string) => {
+    const newMessages = [...messages, { role: 'user' as const, content }];
+    setMessages(newMessages);
+    setIsTyping(true);
 
     try {
-      const reply = await callGrokAPI([{ role: "user", content: prompt }], SYSTEM_PROMPT);
-      setReport(reply);
+      const response = await fetch('/api/v1/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: content,
+          currentState: profile,
+          history: messages
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error?.message || "Something went wrong.");
+
+      if (data.data?.updatedProfile) {
+        setProfile(data.data.updatedProfile);
+      }
+
+      if (data.data?.nextState === 'REPORT_READY') {
+        setCurrentState('REPORT_READY');
+        setIsOrchestrating(true);
+        // The API returns the blueprint in the same response if REPORT_READY is reached
+        if (data.data?.blueprint) {
+          setBlueprint(data.data.blueprint);
+        }
+        setIsOrchestrating(false);
+        setIsTyping(false);
+        return;
+      }
+
+      setCurrentState(data.data?.nextState || currentState);
+
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: data.data?.botResponse || "I didn't quite catch that." }
+      ]);
     } catch (error: any) {
-      setReport(`**Error**: ${error.message}`);
+      console.error(error);
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: "I encountered an error connecting to our secure servers. Please try again." }
+      ]);
     } finally {
-      setIsLoading(false);
+      setIsTyping(false);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (blueprint) {
+      generatePortfolioPDF(blueprint);
     }
   };
 
   return (
-    <div className="h-full flex flex-col p-6 max-w-5xl mx-auto overflow-y-auto">
-      <header className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
-        <h1 className="text-3xl font-bold gradient-text">Portfolio Analyzer</h1>
-        <p className="text-gray-400 mt-2">Get professional AI insights into your asset allocation and diversification.</p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
-        <div className="glass-panel p-6 h-fit">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <PieChart className="text-blue-400 w-5 h-5" />
-            Your Portfolio
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Paste your portfolio details (assets, amounts, symbols, etc.)
-              </label>
-              <textarea 
-                required 
-                rows={8}
-                value={portfolioData} 
-                onChange={(e) => setPortfolioData(e.target.value)} 
-                className="w-full bg-[#0A0A0A] border border-[#2E2E3E] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none" 
-                placeholder="e.g.&#10;HDFC Bank: 50,000 INR&#10;Reliance: 30,000 INR&#10;Nifty 50 Index Fund: 100,000 INR&#10;Gold: 20,000 INR" 
-              />
-            </div>
+    <ChatLayout 
+      featureTitle={portfolioConfig.title}
+      sidebarFields={portfolioConfig.profileFields}
+      profileData={profile}
+    >
+      {isOrchestrating ? (
+        <OrchestratorLoading />
+      ) : blueprint ? (
+        <div className="flex-1 w-full h-full overflow-y-auto bg-white print:overflow-visible print:h-auto print:block">
+          <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+            <PortfolioBlueprintUI data={blueprint} />
             
-            <button disabled={isLoading || !portfolioData.trim()} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <PieChart className="w-5 h-5" />}
-              {isLoading ? "Analyzing Portfolio..." : "Analyze Portfolio"}
-            </button>
-          </form>
+            <div className="mt-12 max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6 print:hidden">
+              <h3 className="text-xl font-medium text-slate-200 mb-6">Ask Follow-up Questions</h3>
+              <ChatWindow messages={messages} isTyping={isTyping} />
+              <div className="mt-4">
+                <ChatInput 
+                  onSend={handleSendMessage} 
+                  isLoading={isTyping || isOrchestrating}
+                  disabled={isTyping || isOrchestrating}
+                  placeholder="Ask about your Portfolio Strategy..." 
+                />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="glass-panel p-6 h-fit min-h-[400px]">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            AI Professional Insights
-          </h2>
-          {isLoading ? (
-            <div className="h-[300px] flex flex-col items-center justify-center text-blue-400 gap-4">
-              <Loader2 className="w-10 h-10 animate-spin" />
-              <p className="text-sm animate-pulse text-gray-400">Evaluating diversification...</p>
-            </div>
-          ) : report ? (
-            <div className="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">
-              <ReactMarkdown>{report}</ReactMarkdown>
-            </div>
-          ) : (
-            <div className="h-[300px] flex items-center justify-center text-gray-500 text-sm text-center">
-              Input your portfolio data and generate a report to see professional insights.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          <ChatWindow messages={messages} isTyping={isTyping} />
+          <div className="shrink-0 w-full z-20 shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.05)]">
+            <ChatInput onSend={handleSendMessage} isLoading={isTyping || isOrchestrating} disabled={isTyping || isOrchestrating} />
+          </div>
+        </>
+      )}
+    </ChatLayout>
   );
 }

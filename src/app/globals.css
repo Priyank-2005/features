@@ -3,6 +3,9 @@
 @theme {
   --color-background: #050505;
   --color-foreground: #ededed;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer base {
@@ -41,4 +44,39 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3E3E5E;
+}
+
+/* 
+ * Blueprint PDF Print Styles
+ * Transforms the web UI into a high-end editorial report
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 1.5in 1.25in;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+  }
+  
+  /* Ensure background colors (like tinted callouts) print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Prevent awkward page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  
+  p, li, .callout {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
