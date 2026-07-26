@@ -103,3 +103,5 @@ export const TaxBlueprintSchema = z.object({
     answer: z.string()
   }))
 });
+
+export type TaxBlueprint = z.infer<typeof TaxBlueprintSchema>;

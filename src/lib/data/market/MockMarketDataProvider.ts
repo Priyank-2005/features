@@ -9,6 +9,8 @@ export class MockMarketDataProvider implements MarketDataProvider {
         summary: 'The Reserve Bank of India decided to keep the benchmark repo rate unchanged for the consecutive time, citing persistent food inflation concerns despite a moderating core inflation trend.',
         source: 'Simulated Central Bank Feed',
         timestamp: new Date().toISOString(),
+        publisher: 'Knowith Capital',
+        url: 'https://knowith.com/news',
         categories: ['Macroeconomics', 'Central Bank', 'Interest Rates']
       },
       {
@@ -17,6 +19,8 @@ export class MockMarketDataProvider implements MarketDataProvider {
         summary: 'Major Indian IT services companies reported better-than-expected Q3 earnings, with management commentary suggesting stabilization in discretionary spending across US and European markets.',
         source: 'Simulated Earnings Feed',
         timestamp: new Date().toISOString(),
+        publisher: 'Knowith Capital',
+        url: 'https://knowith.com/news',
         categories: ['Corporate Earnings', 'IT Sector']
       },
       {
@@ -25,6 +29,8 @@ export class MockMarketDataProvider implements MarketDataProvider {
         summary: 'In a major push to make India a global manufacturing hub, the government has unveiled a $10 Billion Production Linked Incentive (PLI) scheme dedicated to semiconductor fabrication and design.',
         source: 'Simulated Government Policy Feed',
         timestamp: new Date().toISOString(),
+        publisher: 'Knowith Capital',
+        url: 'https://knowith.com/news',
         categories: ['Government Policy', 'Manufacturing', 'Technology']
       },
       {
@@ -33,6 +39,8 @@ export class MockMarketDataProvider implements MarketDataProvider {
         summary: 'Brent crude surpassed $85 per barrel following renewed geopolitical tensions in the Middle East, raising concerns about potential impacts on import-dependent economies.',
         source: 'Simulated Global Commodities Feed',
         timestamp: new Date().toISOString(),
+        publisher: 'Knowith Capital',
+        url: 'https://knowith.com/news',
         categories: ['Global Markets', 'Commodities', 'Geopolitics']
       },
       {
@@ -41,6 +49,8 @@ export class MockMarketDataProvider implements MarketDataProvider {
         summary: 'Domestic automobile manufacturers reported a 15% year-on-year surge in passenger vehicle sales, driven by robust rural demand and new SUV launches.',
         source: 'Simulated Auto Industry Data',
         timestamp: new Date().toISOString(),
+        publisher: 'Knowith Capital',
+        url: 'https://knowith.com/news',
         categories: ['Auto Sector', 'Consumer Demand']
       }
     ];

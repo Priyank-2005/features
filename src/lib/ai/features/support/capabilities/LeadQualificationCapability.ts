@@ -45,7 +45,7 @@ Instructions:
       prompt,
       [{ role: 'user', content: 'Generate conversational lead capture response.' }],
       OutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

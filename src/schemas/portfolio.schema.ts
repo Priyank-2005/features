@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const PortfolioChatRequestSchema = z.object({
   message: z.string(),
-  currentState: z.record(z.any()).optional(),
+  currentState: z.record(z.string(), z.any()).optional(),
   history: z.array(z.object({
     role: z.enum(['user', 'assistant', 'system']),
     content: z.string()
@@ -13,7 +13,7 @@ export const PortfolioAIResponseSchema = z.object({
   version: z.string(),
   status: z.enum(['success', 'error']),
   message: z.string(),
-  updatedProfile: z.record(z.any()),
+  updatedProfile: z.record(z.string(), z.any()),
   cards: z.array(z.any()).optional(),
   nextState: z.enum(['GREETING', 'COLLECTING_L1', 'OPTIONAL_PROMPT', 'COLLECTING_L2', 'VALIDATING', 'SUMMARIZING', 'REPORT_READY', 'AWAITING_USER_ACTION']),
   missingFields: z.array(z.string()).optional()
@@ -52,8 +52,8 @@ export const PortfolioBlueprintSchema = z.object({
   personalityReasoning: z.string(),
   strengths: z.array(z.string()),
   areasOfConcern: z.array(z.string()),
-  currentAllocation: z.record(z.number()),
-  recommendedAllocation: z.record(z.number()),
+  currentAllocation: z.record(z.string(), z.number()),
+  recommendedAllocation: z.record(z.string(), z.number()),
   diversificationAnalysis: z.string(),
   concentrationRisks: z.string(),
   scenarios: z.array(ScenarioSchema),

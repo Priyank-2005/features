@@ -4,7 +4,7 @@ import { PortfolioAIResponseSchema } from '../../schemas/portfolio.schema';
 export const PortfolioFields: FieldMetadata[] = [
   { id: 'totalValue', label: 'Total Portfolio Value', type: 'currency', required: true },
   { id: 'investmentHorizon', label: 'Investment Horizon (Years)', type: 'number', required: true },
-  { id: 'riskAppetite', label: 'Risk Appetite', type: 'text', required: true },
+  { id: 'riskAppetite', label: 'Risk Appetite', type: 'string', required: true },
   { id: 'monthlySip', label: 'Monthly Investment (SIP)', type: 'currency', required: true },
   { id: 'equityPercent', label: 'Equity Allocation (%)', type: 'number', required: true },
   { id: 'debtPercent', label: 'Debt Allocation (%)', type: 'number', required: true },

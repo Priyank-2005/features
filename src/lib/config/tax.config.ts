@@ -1,3 +1,5 @@
+import { FieldMetadata } from './types';
+
 export const taxConfig = {
   title: "Tax Strategist",
   description: "AI-driven tax optimization and regime selection.",
@@ -9,7 +11,7 @@ export const taxConfig = {
     { id: "npsContribution", label: "NPS 80CCD(1B)", type: "currency", required: false },
     { id: "hraExemption", label: "HRA Exemption", type: "currency", required: false },
     { id: "homeLoanInterest", label: "Home Loan Interest", type: "currency", required: false }
-  ],
+  ] as FieldMetadata[],
   systemPrompt: `You are the Lead Tax Strategist at Knowith Capital.
 Your objective is to optimize the user's tax liability and strategically guide them through tax planning.
 

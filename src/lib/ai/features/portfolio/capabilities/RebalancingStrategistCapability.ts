@@ -7,7 +7,7 @@ export const RebalancingStrategistCapability = {
   
   execute: async (context: any) => {
     const StrategistSchema = z.object({
-      recommendedAllocation: z.record(z.number()),
+      recommendedAllocation: z.record(z.string(), z.number()),
       rebalancingRoadmap: z.array(z.object({
         assetClass: z.string(),
         currentAllocation: z.string(),

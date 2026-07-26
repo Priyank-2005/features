@@ -61,7 +61,7 @@ EXAMPLE RESPONSE FORMAT:
       prompt,
       [{ role: 'user', content: 'Provide educational takeaways and historical context.' }],
       EduOutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

@@ -41,7 +41,7 @@ Instructions for handoff object:
       prompt,
       [{ role: 'user', content: 'Generate human handoff.' }],
       OutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

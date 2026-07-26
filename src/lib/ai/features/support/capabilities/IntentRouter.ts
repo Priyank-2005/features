@@ -34,7 +34,7 @@ Also determine a 'confidence' score between 0 and 100 for your classification.
       prompt,
       [{ role: 'user', content: 'Classify intent.' }],
       IntentClassificationSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data; // { intent, confidence }

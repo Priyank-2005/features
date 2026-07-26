@@ -37,7 +37,7 @@ User's Latest Message:
       prompt,
       [{ role: 'user', content: 'Provide educational explanation.' }],
       OutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

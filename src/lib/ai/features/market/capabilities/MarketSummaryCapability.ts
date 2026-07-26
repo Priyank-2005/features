@@ -39,7 +39,7 @@ EXAMPLE RESPONSE FORMAT:
       prompt,
       [{ role: 'user', content: 'Generate Executive Summary.' }],
       MarketSummarySchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

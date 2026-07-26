@@ -63,7 +63,7 @@ EXAMPLE RESPONSE FORMAT:
       prompt,
       [{ role: 'user', content: 'Generate market analysis, themes, and what to watch next.' }],
       AnalysisOutputSchema,
-      "gemini-3.5-pro" // Use Pro for deeper analysis
+      { model: "gemini-3.5-pro" } // Use Pro for deeper analysis
     );
 
     return data;

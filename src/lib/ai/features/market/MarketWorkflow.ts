@@ -1,4 +1,4 @@
-import { WorkflowDefinition } from '../../core/orchestrator/WorkflowExecutor';
+import { WorkflowDefinition } from '../../core/types';
 import { MarketNewsCapability } from './capabilities/MarketNewsCapability';
 import { MarketAnalysisCapability } from './capabilities/MarketAnalysisCapability';
 import { SectorImpactCapability } from './capabilities/SectorImpactCapability';
@@ -9,39 +9,23 @@ import { marketConfig } from '@/lib/config/market.config';
 
 export const marketWorkflow: WorkflowDefinition = {
   id: 'market_intelligence_workflow',
+  version: '1.0',
+  description: 'Analyzes market news and computes impact',
   stages: [
     {
       id: 'news_processing_stage',
       executeType: 'PARALLEL',
       capabilities: [MarketNewsCapability.id],
-      contextBuilder: (initialInput) => ({ feed: initialInput.feed })
     },
     {
       id: 'analysis_stage',
       executeType: 'PARALLEL',
       capabilities: [MarketAnalysisCapability.id, SectorImpactCapability.id, InvestorEducationCapability.id],
-      contextBuilder: (initialInput, previousResults) => {
-        const newsResult = previousResults['news_processing_stage']?.['market_news_v1'];
-        return {
-          topStories: newsResult?.topStories || []
-        };
-      }
     },
     {
       id: 'summary_stage',
       executeType: 'PARALLEL',
       capabilities: [MarketSummaryCapability.id],
-      contextBuilder: (initialInput, previousResults) => {
-        const newsResult = previousResults['news_processing_stage']?.['market_news_v1'];
-        const analysisResult = previousResults['analysis_stage']?.['market_analysis_v1'];
-        const sectorResult = previousResults['analysis_stage']?.['sector_impact_v1'];
-        
-        return {
-          topStories: newsResult?.topStories || [],
-          emergingThemes: analysisResult?.emergingThemes || [],
-          sectorImpacts: sectorResult?.sectorImpacts || []
-        };
-      }
     }
   ],
   assembler: (stageResults: Record<string, any>, initialInput: any): MarketBlueprint => {

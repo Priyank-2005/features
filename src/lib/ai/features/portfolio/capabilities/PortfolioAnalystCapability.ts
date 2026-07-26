@@ -7,7 +7,7 @@ export const PortfolioAnalystCapability = {
   
   execute: async (context: any) => {
     const AnalystSchema = z.object({
-      scores: z.record(z.object({
+      scores: z.record(z.string(), z.object({
         score: z.number(),
         explanation: z.string(),
         whyItMatters: z.string()

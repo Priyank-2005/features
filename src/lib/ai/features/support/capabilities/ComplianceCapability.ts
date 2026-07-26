@@ -33,7 +33,7 @@ If it is compliant, set isCompliant to true.
       prompt,
       [{ role: 'user', content: 'Review for compliance.' }],
       OutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

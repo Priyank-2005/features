@@ -20,8 +20,8 @@ export const PortfolioBlueprint: React.FC<{ data: PortfolioBlueprintType }> = ({
   // Format allocation data for Recharts
   const allocationData = Object.keys(data.currentAllocation || {}).map(asset => ({
     name: asset,
-    Current: data.currentAllocation[asset],
-    Recommended: data.recommendedAllocation?.[asset] || data.currentAllocation[asset]
+    Current: (data.currentAllocation as any)[asset],
+    Recommended: (data.recommendedAllocation as any)?.[asset] || (data.currentAllocation as any)[asset]
   }));
 
   return (

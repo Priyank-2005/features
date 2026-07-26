@@ -32,7 +32,7 @@ Keep the tone professional, warm, and concise. Prefer bullets for listing.
       prompt,
       [{ role: 'user', content: 'Provide the factual answer.' }],
       OutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;

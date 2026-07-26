@@ -41,7 +41,7 @@ EXAMPLE RESPONSE FORMAT:
       prompt,
       [{ role: 'user', content: 'Process the raw news feed into top stories.' }],
       NewsOutputSchema,
-      "gemini-3.5-flash"
+      { model: "gemini-3.5-flash" }
     );
 
     return data;
