@@ -48,10 +48,12 @@ export async function POST(
       },
     });
 
-    // Process emails asynchronously (don't await — let it run in background)
-    processEmails(id).catch((err) => {
+    // Process emails synchronously for Vercel serverless environments
+    try {
+      await processEmails(id);
+    } catch (err) {
       console.error(`[Campaign Send Error] Campaign ${id}:`, err);
-    });
+    }
 
     return NextResponse.json({ success: true, message: 'Campaign is being sent', recipientCount });
   } catch (error: any) {
