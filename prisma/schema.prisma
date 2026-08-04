@@ -85,3 +85,125 @@ model Lead {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
+
+model Campaign {
+  id              String             @id @default(uuid())
+  name            String
+  subject         String
+  description     String?
+  templateId      String?
+  template        EmailTemplate?     @relation(fields: [templateId], references: [id])
+  status          String             @default("DRAFT") // DRAFT/SCHEDULED/SENDING/COMPLETED/FAILED/CANCELLED/PAUSED
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  completedAt     DateTime?
+  totalRecipients Int                @default(0)
+  totalDelivered  Int                @default(0)
+  totalOpened     Int                @default(0)
+  totalClicked    Int                @default(0)
+  totalFailed     Int                @default(0)
+  totalBounced    Int                @default(0)
+  fromName        String             @default("Knowith Capital")
+  fromEmail       String             @default("noreply@knowith.com")
+  replyTo         String?
+  tags            String?
+  renderedHtml    String?
+  renderedSubject String?
+  approvalStatus  String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdBy       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  recipients      CampaignRecipient[]
+  activities      CampaignActivity[]
+}
+
+model EmailTemplate {
+  id              String             @id @default(uuid())
+  name            String
+  description     String?
+  category        String             @default("General")
+  subject         String?
+  htmlContent     String
+  jsonContent     String?
+  thumbnail       String?
+  isDefault       Boolean            @default(false)
+  createdBy       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  campaigns       Campaign[]
+}
+
+model CampaignRecipient {
+  id              String             @id @default(uuid())
+  campaignId      String
+  campaign        Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId          String?
+  contactId       String?
+  contact         EmailContact?      @relation(fields: [contactId], references: [id])
+  email           String
+  name            String?
+  status          String             @default("PENDING") // PENDING/QUEUED/SENT/DELIVERED/FAILED/OPENED/CLICKED/BOUNCED/UNSUBSCRIBED
+  errorMessage    String?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  retryCount      Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model EmailEvent {
+  id              String             @id @default(uuid())
+  campaignId      String
+  recipientId     String?
+  eventType       String
+  metadata        String?
+  createdAt       DateTime           @default(now())
+}
+
+model RecipientSegment {
+  id              String             @id @default(uuid())
+  name            String
+  description     String?
+  filters         String
+  recipientCount  Int                @default(0)
+  createdBy       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model Unsubscribe {
+  id              String             @id @default(uuid())
+  email           String             @unique
+  reason          String?
+  unsubscribedAt  DateTime           @default(now())
+  campaignId      String?
+}
+
+model CampaignActivity {
+  id              String             @id @default(uuid())
+  campaignId      String
+  campaign        Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  action          String
+  description     String?
+  metadata        String?
+  performedBy     String?
+  createdAt       DateTime           @default(now())
+}
+
+model EmailContact {
+  id              String              @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String              @unique
+  mobile          String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  campaigns       CampaignRecipient[]
+}

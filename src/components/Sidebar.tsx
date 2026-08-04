@@ -10,7 +10,10 @@ import {
   Target, 
   ShieldCheck, 
   MessageSquare, 
-  Newspaper 
+  Newspaper,
+  Mail,
+  Users,
+  LayoutTemplate
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -28,6 +31,9 @@ const navItems = [
   { name: 'Tax Advisor', href: '/tax', icon: ShieldCheck },
   { name: 'Support Assistant', href: '/support', icon: MessageSquare },
   { name: 'Market News', href: '/news', icon: Newspaper },
+  { name: 'Campaigns', href: '/campaigns', icon: Mail },
+  { name: 'Email Templates', href: '/campaigns/templates', icon: LayoutTemplate },
+  { name: 'Audience', href: '/campaigns/contacts', icon: Users },
 ];
 
 export default function Sidebar() {
